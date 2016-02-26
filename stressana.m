@@ -1,5 +1,5 @@
-
-%node stress components averaging for nodes
+%Nodal stress components averaging for nodes and plot of the vonMises
+%stress
 function stressana(dv,data,ELEM_NODE,matC0,COORD,UG,nlay,nmax)
 nd=data.nd;
 N_ELEM=data.N_ELEM;

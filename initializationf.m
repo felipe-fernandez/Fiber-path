@@ -1,8 +1,17 @@
-
-%  data.At          - Area of domain
-%  data.nlay        - number of layers
+% initialization function
+% calls:    read file function to upload mesh
+%           constitutive model function
+%           cone filter function
+% input: 
+%   filename    - txt file with mesh
+%   nlay        - number of layers
+%   loadv       - nodal force
+%   th          - thickness of the layer
+%   rc          - requested constraints
+%   efilter     - cone filter radius
+%   fpres       - pressure force module
+% output: described below
 function [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres)
-
 %read file
 data=readfile(filename);
 %Constitutive matrix
@@ -163,5 +172,4 @@ for ele=f_ele
     end
 end
 %plot(forcp(:,1),forcp(:,2))
-
 end

@@ -1,5 +1,9 @@
 %non linear constraints for each layer
-function [consr,dconsr,vfrac]=nlcnl(dv,data,ELEM_NODE,nmin,nmax,pow,rmin,lay,nlay,COORD,cdiv,rc)
+function [consr,dconsr]=nlcnl(dv,data,nmin,nmax,pow,rmin,lay,cdiv,rc)
+
+ELEM_NODE=data.ELEM_NODE;
+COORD=data.COORD;
+nlay=data.nlay;
 cons=[0;0;0;0];
 dcons=zeros(4,nlay*data.nd);
 
@@ -8,7 +12,6 @@ Ngauss=1;   %Number of Gauss points
 
 %initialize values
 area=0;
-vfrac=0;
 dvfrac=zeros(1,nlay*data.nd);
 DPHIv=zeros(data.nd,2);
 dDPHIvx=sparse(data.nd,data.nd);
@@ -73,9 +76,12 @@ norv=DPHIv./([nDPHIv nDPHIv]);
 dnorvx=sparse(data.nd,data.nd);
 dnorvy=sparse(data.nd,data.nd);
 for jnod=1:data.nd
-    dnDPHIv=(DPHIv(jnod,1)*dDPHIvx(jnod,:)+DPHIv(jnod,2)*dDPHIvy(jnod,:))/nDPHIv(jnod);
-    dnorvx(jnod,:)=dnorvx(jnod,:)+dDPHIvx(jnod,:)/nDPHIv(jnod)-DPHIv(jnod,1)*dnDPHIv/(nDPHIv(jnod)^2);
-    dnorvy(jnod,:)=dnorvy(jnod,:)+dDPHIvy(jnod,:)/nDPHIv(jnod)-DPHIv(jnod,2)*dnDPHIv/(nDPHIv(jnod)^2);
+    dnDPHIv=(DPHIv(jnod,1)*dDPHIvx(jnod,:)+...
+        DPHIv(jnod,2)*dDPHIvy(jnod,:))/nDPHIv(jnod);
+    dnorvx(jnod,:)=dnorvx(jnod,:)+...
+        dDPHIvx(jnod,:)/nDPHIv(jnod)-DPHIv(jnod,1)*dnDPHIv/(nDPHIv(jnod)^2);
+    dnorvy(jnod,:)=dnorvy(jnod,:)+...
+        dDPHIvy(jnod,:)/nDPHIv(jnod)-DPHIv(jnod,2)*dnDPHIv/(nDPHIv(jnod)^2);
 end
 
 
@@ -168,7 +174,8 @@ for ele=1:data.N_ELEM
             cons=cons+wg(eit)*wg(nit)*[c1;c2;c3;c5]*Jdet;
             %dcons(1:3,ienl)=dcons(1:3,ienl)+wg(eit)*wg(nit)*[-dc1;dc2;dc4]*Jdet;
             dcons(1:2,ienl)=dcons(1:2,ienl)+wg(eit)*wg(nit)*[-dc1;dc2]*Jdet;
-            dcons(3:4,(1:nd)+(lay-1)*nd)=dcons(3:4,(1:nd)+(lay-1)*nd)+wg(eit)*wg(nit)*[dc3;dc5]*Jdet;
+            dcons(3:4,(1:nd)+(lay-1)*nd)=dcons(3:4,(1:nd)+...
+                (lay-1)*nd)+wg(eit)*wg(nit)*[dc3;dc5]*Jdet;
             %volume fraction
             chi=Normdphi/nmax;
             

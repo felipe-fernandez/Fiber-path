@@ -1,11 +1,11 @@
-%plot displacement
-function plotfun(COORD,vm,data,nameplot,num)
+%plot scalar nodal values fieldp
+function plotfun(COORD,fieldp,data,nameplot,num)
 figure(num)
 set(num,'Position',[20+400*(num-1) 20 400 400]);
-vmM=max(vm);
+vmM=max(fieldp);
 xyplot=linspace(-0.03,0.03,200);
 [Xp,Yp]=meshgrid(xyplot,xyplot);
-[Xr,Yr,Fr] = griddata(COORD(:,1),COORD(:,2),vm,Xp,Yp);
+[Xr,Yr,Fr] = griddata(COORD(:,1),COORD(:,2),fieldp,Xp,Yp);
 %vlevel=[0:.2:2];
 %contourf(Xr,Yr,Fr,vlevel)
 contour(Xr,Yr,Fr,20)

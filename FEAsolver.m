@@ -1,5 +1,4 @@
-
-%Finite Element Analysis function
+%Finite Element Analysis function solve the solid 2D problem
 function [UG,KG]=FEAsolver(data,ELEM_NODE,UG,FG,dv,COORD,th,nmax,nlay)
 %Loop over elements to assembly the stiffness matrix
 KG=sparse(data.N_NODE,data.N_NODE); %Global Stiffness matrix

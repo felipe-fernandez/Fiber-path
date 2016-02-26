@@ -1,5 +1,4 @@
-
-%adjoint problem
+%Adjoint problem and objective function evaluation
 function [WG,theta]=adjointFEA(dv,UG,data,ELEM_NODE,COORD,matC0,th,KG,nlay,nmax)
 Ngauss=2;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);

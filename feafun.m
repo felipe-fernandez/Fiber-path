@@ -1,4 +1,4 @@
-%fea fun
+%Finite element function
 function [theta,dtheta]=feafun(dvs,G,data,UG0,FG,th,c0,nmax)
 
 ELEM_NODE=data.ELEM_NODE;
@@ -12,9 +12,17 @@ nd=data.nd; %number of design variables
 %FINITE ELEMENT ANALYSIS
 [UG,KG]=FEAsolver(data,ELEM_NODE,UG0,FG,G*dv,COORD,th,nmax,nlay);
 
-%OBJECTIVE ADJOINT PROBLEM AND TOPOLOGICAL DERIVATIVE
-[theta,dtheta]=POSTprocess(UG,KG,COORD,ELEM_NODE,data,th,G*dv,FG,nmax,nlay);
+%Constitutive matrix
+matC0=data.matC0;
+stressana(dv,data,ELEM_NODE,matC0,COORD,UG,nlay,nmax);
+%adjoint problem
+[WG,theta]=adjointFEA(dv,UG,data,ELEM_NODE,COORD,matC0,th,KG,nlay,nmax);
+%self adjoint problem
+%WG=UG;
+%theta=FG'*UG/2;
 
+%derivative
+dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,matC0,th,nmax,nlay);
 %normalize objective
 theta=theta/c0;
 %normalize and filter chain rule

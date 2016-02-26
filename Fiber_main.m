@@ -43,9 +43,9 @@ filename='fex2_2.txt';
 % %dv=0.9*(data.Yc+15/1000);%rand(size(data.Yb));%data.Yb,yH-data.Yb);%min(min(data.Yb,data.Xb),min(yH-data.Yb,xL-data.Xb));
 % dv=sqrt(data.Yc.^2+data.Xc.^2);
 % %initial fea to normalize
-% [theta,dtheta]=feafun(dv,G,data,ELEM_NODE,UG0,FG,COORD,th,1,nameplot,nmax,nlay);
-% [cons,ceq,dcons,dceq]=nlcn(dv,G,data,ELEM_NODE,nmin,nmax,pow,rmin,nlay,COORD);
-
+% [theta,dtheta]=feafun(dv,G,data,UG0,FG,th,1,nameplot,nmax);
+% [cons,ceq,dcons,dceq]=nlcn(dv,G,data,nmin,nmax,pow,rmin);
+% 
 % cons
 % %finite differences
 % ddiff=1e-6;
@@ -53,8 +53,8 @@ filename='fex2_2.txt';
 %     alphad=dv;
 %     alphad(var)=alphad(var)+ddiff;
 %     %finite element and post processing function
-%     [thetad,dthetad]=feafun(alphad,G,data,ELEM_NODE,UG0,FG,COORD,th,1,nameplot,nmax,nlay);
-%     [consd,ceqd,dconsd,dceqd]=nlcn(alphad,G,data,ELEM_NODE,nmin,nmax,pow,rmin,nlay,COORD);
+%     [thetad,dthetad]=feafun(alphad,G,data,ELEM_NODE,UG0,FG,COORD,th,1,nameplot,nmax);
+%     [consd,ceqd,dconsd,dceqd]=nlcn(alphad,G,data,nmin,nmax,pow,rmin);
 %     %derivative
 %     dtheta_fd(var)=(thetad-theta)/ddiff;
 %     dcons_fd(:,var)=(consd-cons)/ddiff;
@@ -74,7 +74,7 @@ end
 
 %initial fea to normalize
 [c0,dtheta]=feafun(dv,eye(nlay*data.nd),data,UG0,FG,th,1,nmax);
-[cons,ceq,dcons,dceq,vfrac]=nlcn(dv,eye(nlay*data.nd),data,nmin,nmax,pow,rmin,cdiv,rc);
+[cons,ceq,dcons,dceq]=nlcn(dv,eye(nlay*data.nd),data,nmin,nmax,pow,rmin,cdiv,rc);
 
 % dv=(-sqrt(19/20)*data.Yc+sqrt(1/20)*data.Xc);
 % if nlay>1
@@ -107,8 +107,8 @@ options = optimset('GradObj','on',...
 [dvo,fval] =fmincon(obFUN,dv,[],[],[],[],-ones(nlay*data.nd,1),ones(nlay*data.nd,1),conFUN,options);
 
 [theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax);
-[cons,ceq,dcons,dceq,vfrac]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc);
-disp(['c=' num2str(theta,'%1.8f') '; v=' num2str(vfrac,'%1.3f') ])
+[cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc);
+disp(['c=' num2str(theta,'%1.8f') ])
 save([data.nameplot '.mat']);
 end
 

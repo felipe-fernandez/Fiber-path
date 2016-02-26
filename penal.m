@@ -1,5 +1,4 @@
-
-%penalization function
+%Penalization of the density
 function [rho,drho]=penal(chi)
 % p=1;
 % %penalization
