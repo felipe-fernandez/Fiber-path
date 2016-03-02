@@ -21,7 +21,7 @@ data.nameplot=['Fig' num2str(nlay) rc num2str(round(efilter*1000))]; %Fig nlay c
 data.At=pi*.015^2+.03^2-2*pi*.005^2;
 data.nlay=nlay;
 %cone filter
-G=cfilter(data,efilter);
+[G,data]=cfilter(data,efilter);
 
 % Structure of the problem
 FG=sparse(data.N_NODE,1);     %Global Applied Force Vector

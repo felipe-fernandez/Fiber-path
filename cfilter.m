@@ -1,6 +1,6 @@
 % Cone filter function
 
-function G=cfilter(data,efilter)
+function [G,data]=cfilter(data,efilter)
 
 %get data
 nlay=data.nlay;
@@ -11,11 +11,12 @@ nodev=1:(data.nd);
 elev=1:(data.N_ELEM);
 elem_nod=ELEM_NODE(:,2:2:end)/2;
 nd=data.nd;
+ne=data.N_ELEM;
 
 Ngauss=1;   %Center of each element
 [egv,wg] = GLTable(Ngauss);
-Area_el=zeros(data.N_ELEM,1);
-xc_el=zeros(data.N_ELEM,2);
+Area_el=zeros(ne,1);
+xc_el=zeros(ne,2);
 
 %All the elements
 for ele=elev
@@ -43,14 +44,17 @@ for ele=elev
         end
     end
 end
-
+%store for volume constraint
+data.Area_el=Area_el;
+%store center of the elements for plot
+data.xc_el=xc_el;
 
 if efilter==0
-    G=eye(nd,nd);
+    Gc=eye(nd,nd);
 else
     %initialize parameters
     nd=data.nd;
-    G=sparse(nd,nd);
+    Gc=sparse(nd,nd);
     %loop over elements
     for nodp=nodev
         %nodal coordinate
@@ -74,25 +78,26 @@ else
         filtera=Area_el(elesum).*(efilter-dise)/(efilter);
         filtera(dise>efilter)=0;
         %filter
-        G(nodp,iene(:,1))=G(nodp,iene(:,1))+filtera';
-        G(nodp,iene(:,2))=G(nodp,iene(:,2))+filtera';
-        G(nodp,iene(:,3))=G(nodp,iene(:,3))+filtera';
-        G(nodp,iene(:,4))=G(nodp,iene(:,4))+filtera';
+        Gc(nodp,iene(:,1))=Gc(nodp,iene(:,1))+filtera';
+        Gc(nodp,iene(:,2))=Gc(nodp,iene(:,2))+filtera';
+        Gc(nodp,iene(:,3))=Gc(nodp,iene(:,3))+filtera';
+        Gc(nodp,iene(:,4))=Gc(nodp,iene(:,4))+filtera';
         
     end
     
     %average
     for nod=1:data.nd
         %average
-        G(nod,:)=G(nod,:)/sum(G(nod,:));
+        Gc(nod,:)=Gc(nod,:)/sum(Gc(nod,:));
     end
 end
 
 %layers filter
-Gl=sparse(nd*nlay,nd*nlay);
+G=sparse((nd+ne)*nlay,(nd+ne)*nlay);
 for lay=1:nlay
-    Gl((lay-1)*nd+(1:nd),(lay-1)*nd+(1:nd))=G;
+    G((lay-1)*nd+(1:nd),(lay-1)*nd+(1:nd))=Gc;
 end
-G=Gl;
-
+%filter for elements
+Ge=eye(nlay*ne);
+G((nd*nlay+1):end,(nd*nlay+1):end)=Ge;
 end

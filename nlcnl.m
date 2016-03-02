@@ -1,26 +1,29 @@
 %non linear constraints for each layer
 function [consr,dconsr]=nlcnl(dv,data,nmin,nmax,pow,rmin,lay,cdiv,rc)
 
+%updload data
 ELEM_NODE=data.ELEM_NODE;
 COORD=data.COORD;
 nlay=data.nlay;
+
 cons=[0;0;0;0];
-dcons=zeros(4,nlay*data.nd);
+nd=data.nd;
+ne=data.N_ELEM;
+dcons=zeros(4,nlay*(nd+ne));
 
 Ngauss=1;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);
 
 %initialize values
 area=0;
-dvfrac=zeros(1,nlay*data.nd);
-DPHIv=zeros(data.nd,2);
-dDPHIvx=sparse(data.nd,data.nd);
-dDPHIvy=sparse(data.nd,data.nd);
-counv=zeros(data.nd,1);
-nd=data.nd;
+DPHIv=zeros(nd,2);
+dDPHIvx=sparse(nd,nd);
+dDPHIvy=sparse(nd,nd);
+counv=zeros(nd,1);
+
 
 %integration in the domain
-for ele=1:data.N_ELEM
+for ele=1:ne
     %Index of element nodes vector field
     ienv=ELEM_NODE(ele,:);
     %index of nodes scalar field

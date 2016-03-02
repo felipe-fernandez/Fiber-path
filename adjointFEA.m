@@ -4,6 +4,8 @@ Ngauss=2;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);
 theta=0;
 nd=data.nd;
+ne=data.N_ELEM;
+dve=dv((nd*nlay+1):end);
 FGw=zeros(data.N_NODE,1); %Global Stiffness matrix
 
 BKe=zeros(4,8);
@@ -16,7 +18,7 @@ c1122=matC0(1,4);
 c2121=matC0(2,2);
 
 %integration in the domain
-for ele=1:data.N_ELEM
+for ele=1:ne
     %Index of element nodes vector field
     ienv=ELEM_NODE(ele,:);
     %index of nodes scalar field
@@ -58,11 +60,13 @@ for ele=1:data.N_ELEM
                     (sin(2*angle)*(c1111 - c2222 + c1111*cos(2*angle) - 2*c1122*cos(2*angle) - 4*c2121*cos(2*angle) + c2222*cos(2*angle)))/4,            c2121 + (c1111*sin(2*angle)^2)/4 - (c1122*sin(2*angle)^2)/2 - c2121*sin(2*angle)^2 + (c2222*sin(2*angle)^2)/4,            c2121 + (c1111*(1-cos(4*angle)))/8 - (c1122*(1-cos(4*angle)))/4 - c2121*(1-cos(4*angle))/2 + (c2222*(1-cos(4*angle)))/8,                                                                           (sin(2*angle)*(c1111 - c2222 - c1111*cos(2*angle) + 2*c1122*cos(2*angle) + 4*c2121*cos(2*angle) - c2222*cos(2*angle)))/4;...
                     c1111/8 + (3*c1122)/4 - c2121/2 + c2222/8 - (c1111*cos(4*angle))/8 + (c1122*cos(4*angle))/4 + (c2121*cos(4*angle))/2 - (c2222*cos(4*angle))/8, (sin(2*angle)*(c1111 - c2222 - c1111*cos(2*angle) + 2*c1122*cos(2*angle) + 4*c2121*cos(2*angle) - c2222*cos(2*angle)))/4, (sin(2*angle)*(c1111 - c2222 - c1111*cos(2*angle) + 2*c1122*cos(2*angle) + 4*c2121*cos(2*angle) - c2222*cos(2*angle)))/4, c2121*(1-cos(4*angle))/2 + (c1111*(cos(2*angle)/2 - 1/2) - c1122*(cos(2*angle)/2 + 1/2))*(cos(2*angle)/2 - 1/2) - (c1122*(cos(2*angle)/2 - 1/2) - c2222*(cos(2*angle)/2 + 1/2))*(cos(2*angle)/2 + 1/2)];
                 %volume fraction
-                chi=normnphi/nmax;
+                chil=normnphi/nmax;
                 %penalization
-                rho=penal(chi);
+                rhol=penal(chil);
+                %volume fraction independent of level set
+                chie=dve(ele+(lay-1)*ne);
                 %material properties
-                matC=matC+rho*matCa/nlay;
+                matC=matC+chie*rhol*matCa/nlay;
             end
             
             %kronecker

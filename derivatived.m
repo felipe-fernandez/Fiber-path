@@ -1,11 +1,13 @@
 %Sensitivity analysis function
 function dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,matC0,th,nmax,nlay)
-dtheta=zeros(1,nlay*data.nd);
+nd=data.nd;
+ne=data.N_ELEM;
+dve=dv((nd*nlay+1):end);
+dtheta=zeros(1,nlay*(nd+ne));
 BKe=zeros(4,8);
 NKe=zeros(2,8);
 Ngauss=2;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);
-nd=data.nd;
 
 %orthotropic material
 c1111=matC0(1,1);
@@ -15,7 +17,7 @@ c2121=matC0(2,2);
 
 
 %integration in the domain
-for ele=1:data.N_ELEM
+for ele=1:ne
     %Index of element nodes vector field
     ienv=ELEM_NODE(ele,:);
     %index of nodes scalar field
@@ -78,14 +80,19 @@ for ele=1:data.N_ELEM
                 %volume fraction
                 chi=normnphi/nmax;
                 %penalization
-                [rho,drho]=penal(chi);
+                [rhol,drhol]=penal(chi);
+                %volume fraction independent of level set
+                chie=dve(ele+(lay-1)*ne);
                 
                 %material properties
-                dmatC1=rho*dmatC/nlay;
-                dmatC2=drho*matC/nmax/nlay;
+                dmatC1=chie*rhol*dmatC/nlay;
+                dmatC2=chie*drhol*matC/nmax/nlay;
+                dmatC3=rhol*matC/nlay;
                 
                 %derivative
                 dtheta(ienl)=dtheta(ienl)+wg(eit)*wg(nit)*Jdet*th*((Du'*dmatC2*Du/2-Dw'*dmatC2*Du)*dnormnphi+(Du'*dmatC1*Du/2-Dw'*dmatC1*Du)*dangle);
+                dtheta(nd*nlay+ele+(lay-1)*ne)=dtheta(nd*nlay+ele+(lay-1)*ne)+wg(eit)*wg(nit)*Jdet*th*(Du'*dmatC3*Du/2-Dw'*dmatC3*Du);
+                
             end
         end
     end
