@@ -1,7 +1,8 @@
 %Sensitivity analysis function
-function dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,matC0,th,nmax,nlay)
+function dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,th,nmax,nlay)
 nd=data.nd;
 ne=data.N_ELEM;
+matC0=data.matC0;
 dve=dv((nd*nlay+1):end);
 dtheta=zeros(1,nlay*(nd+ne));
 BKe=zeros(4,8);

@@ -25,17 +25,21 @@ loadv=0;        %traction force magnitude for applied nodes
 fpres=[1e6;0];  %prescribed pressure force for applied nodes
 nmin=.1;        %minimun gradient constraint
 nmax=10;        %maximum gradient constraint
-rmin=1e-3;      %minimun radius for toolpath
+rmin=5e-4;      %minimun radius for toolpath
 pow=2;          %power that smooth ramp function
 efilter=5e-3;   %radius of filter
-cdiv=10;        %divergence constraint parameter
+cdiv=1;        %divergence constraint parameter
 rc='g';         %requested constraints 'g' gradient 'k' curvature 'd' divergence 
-nlay=2;         %number of layers
+nlay=1;         %number of layers
 vfc=0.5;        %volume fraction constraint
 numv=5;         %number of random variables to check finite differences 
 
 % Read mesh file
 filename='fex2_2.txt';
+
+% %just plot result from a .mat file
+% plotfile(nlay, rc, efilter)
+% return 
 
 % Initialization
 [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres);
@@ -81,7 +85,7 @@ options = optimset('GradObj','on',...
 
 [theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax,1);
 [cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc);
-disp(['c=' num2str(theta,'%1.8f') ])
+disp([data.nameplot '  g=' num2str(nmin) '/' num2str(nmax) '  filter=' num2str(efilter) '  rmin=' num2str(rmin)  '  cdiv='  num2str(cdiv) '  c=' num2str(theta,'%1.8f') ])
 save([data.nameplot '.mat']);
 end
 

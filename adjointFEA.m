@@ -1,9 +1,10 @@
 %Adjoint problem and objective function evaluation
-function [WG,theta]=adjointFEA(dv,UG,data,ELEM_NODE,COORD,matC0,th,KG,nlay,nmax)
+function [WG,theta]=adjointFEA(dv,UG,data,ELEM_NODE,COORD,th,KG,nlay,nmax)
 Ngauss=2;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);
 theta=0;
 nd=data.nd;
+matC0=data.matC0;
 ne=data.N_ELEM;
 dve=dv((nd*nlay+1):end);
 FGw=zeros(data.N_NODE,1); %Global Stiffness matrix

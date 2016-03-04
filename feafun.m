@@ -16,17 +16,15 @@ dvf=G*dv;       %filter design variables
 %FINITE ELEMENT ANALYSIS
 [UG,KG]=FEAsolver(data,ELEM_NODE,UG0,FG,dvf,COORD,th,nmax,nlay);
 
-%Constitutive matrix
-matC0=data.matC0;
-stressana(dvf,data,ELEM_NODE,matC0,COORD,UG,nlay,nmax);
+%stressana(dvf,data,ELEM_NODE,matC0,COORD,UG,nlay,nmax);
 %adjoint problem
-[WG,theta]=adjointFEA(dvf,UG,data,ELEM_NODE,COORD,matC0,th,KG,nlay,nmax);
+[WG,theta]=adjointFEA(dvf,UG,data,ELEM_NODE,COORD,th,KG,nlay,nmax);
 %self adjoint problem
 %WG=UG;
 %theta=FG'*UG/2;
 
 %derivative
-dtheta=derivatived(dvf,WG,UG,data,ELEM_NODE,COORD,matC0,th,nmax,nlay);
+dtheta=derivatived(dvf,WG,UG,data,ELEM_NODE,COORD,th,nmax,nlay);
 %normalize objective
 theta=theta/c0;
 %normalize and filter chain rule
