@@ -1,7 +1,7 @@
 %Function that reads file and plots 
-function plotfile(nlay, rc, efilter)
+function plotfile(nlay, rc, efilter, vel)
 
-nameplot=['Fig' num2str(nlay) rc num2str(round(efilter*1000))]; %Fig nlay constraints filter
+nameplot=['Fig' vel num2str(nlay) rc num2str(round(efilter*1000))]; %Fig nlay constraints filter
 load([nameplot '.mat'])
 
 % nd=data.nd;

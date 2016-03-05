@@ -11,13 +11,13 @@
 %   efilter     - cone filter radius
 %   fpres       - pressure force module
 % output: described below
-function [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres)
+function [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres,vel)
 %read file
 data=readfile(filename);
 %Constitutive matrix
 data.matC0=consti();
 %name of the plot and archives
-data.nameplot=['Fig' num2str(nlay) rc num2str(round(efilter*1000))]; %Fig nlay constraints filter
+data.nameplot=['Fig' vel num2str(nlay) rc num2str(round(efilter*1000))]; %Fig nlay constraints filter
 data.At=pi*.015^2+.03^2-2*pi*.005^2;
 data.nlay=nlay;
 %cone filter

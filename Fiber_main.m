@@ -38,12 +38,12 @@ numv=2;         %number of random variables to check finite differences
 % Read mesh file
 filename='fex2_2.txt';
 
-% %just plot result from a .mat file
-% plotfile(nlay, rc, efilter)
+% % %just plot result from a .mat file
+% plotfile(nlay, rc, efilter, vel)
 % return 
 
 % Initialization
-[data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres);
+[data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres,vel);
 
 %initial level set function
 dv0=vfc*data.Yc*nmax;
@@ -51,7 +51,9 @@ dv0=vfc*data.Yc*nmax;
 dv=repmat(dv0,nlay,1)/.03;
 %dv=[dv0;dv1]/.03;
 %initial element densities
-%dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
+if vel~='c'
+    dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
+end
 
 %initial fea to normalize
 [c0,dtheta]=feafun(dv,eye(nlay*(data.nd+data.N_ELEM)),data,UG0,FG,th,1,nmax,1,vel);
@@ -66,8 +68,9 @@ if nlay==3
 end
 dv=vfc*nmax*dv/0.03;
 %initial element densities
-%dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
-
+if vel~='c'
+    dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
+end
 %finite element and post processing function
 obFUN=@(dalpha)feafun(dalpha,G,data,UG0,FG,th,c0,nmax,1,vel);
 conFUN=@(dalpha)nlcn(dalpha,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
@@ -80,9 +83,13 @@ conFUN=@(dalpha)nlcn(dalpha,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
 options = optimset('GradObj','on',...
     'Display','on','GradConstr','on',...
     'Tolfun',1e-4,'TolCon',1e-4,'TolX',1e-5,'MaxIter',500,...
-    'Algorithm','interior-point','Display','iter','MaxFunEvals',500,'AlwaysHonorConstraints','bounds');
+    'Algorithm','interior-point','Display','iter','MaxFunEvals',1000,'AlwaysHonorConstraints','bounds');
 %call fmincon function embedded in Matlab
-[dvo,fval] =fmincon(obFUN,dv,[],[],[],[],[-20*ones(nlay*data.nd,1);zeros(nlay*data.N_ELEM,1)],20*ones(nlay*(data.nd+data.N_ELEM),1),conFUN,options);
+low=-20*ones(nlay*data.nd,1);
+if vel~='c'
+    low=[low;zeros(nlay*data.N_ELEM,1)];
+end
+[dvo,fval] =fmincon(obFUN,dv,[],[],[],[],low,20*ones(nlay*(data.nd+(vel~='c')*data.N_ELEM),1),conFUN,options);
 
 [theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax,1,vel);
 [cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
