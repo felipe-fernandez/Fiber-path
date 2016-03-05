@@ -25,7 +25,7 @@ loadv=0;        %traction force magnitude for applied nodes
 fpres=[1e6;0];  %prescribed pressure force for applied nodes
 nmin=.1;        %minimun gradient constraint
 nmax=10;        %maximum gradient constraint
-rmin=5e-4;      %minimun radius for toolpath
+rmin=1e-3;      %minimun radius for toolpath
 pow=2;          %power that smooth ramp function
 efilter=5e-3;   %radius of filter
 cdiv=1;        %divergence constraint parameter
@@ -46,7 +46,7 @@ filename='fex2_2.txt';
 [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres);
 
 %initial level set function
-dv0=vfc*nmax*data.Yc;
+dv0=vfc*data.Yc*nmax;
 %dv1=sqrt(data.Yc.^2+data.Xc.^2);
 dv=repmat(dv0,nlay,1)/.03;
 %dv=[dv0;dv1]/.03;
@@ -64,7 +64,7 @@ end
 if nlay==3
     dv=[dv;(1+.2*rand(data.nd,1)).*data.Yc];
 end
-dv=dv/0.03;
+dv=vfc*nmax*dv/0.03;
 %initial element densities
 %dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
 
@@ -79,10 +79,10 @@ conFUN=@(dalpha)nlcn(dalpha,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
 %algorithm is set as interior-point as suggest matlab help
 options = optimset('GradObj','on',...
     'Display','on','GradConstr','on',...
-    'Tolfun',1e-4,'TolCon',1e-4,'TolX',1e-5,'MaxIter',5,...
+    'Tolfun',1e-4,'TolCon',1e-4,'TolX',1e-5,'MaxIter',500,...
     'Algorithm','interior-point','Display','iter','MaxFunEvals',500,'AlwaysHonorConstraints','bounds');
 %call fmincon function embedded in Matlab
-[dvo,fval] =fmincon(obFUN,dv,[],[],[],[],[-ones(nlay*data.nd,1);zeros(nlay*data.N_ELEM,1)],ones(nlay*(data.nd+data.N_ELEM),1),conFUN,options);
+[dvo,fval] =fmincon(obFUN,dv,[],[],[],[],[-20*ones(nlay*data.nd,1);zeros(nlay*data.N_ELEM,1)],20*ones(nlay*(data.nd+data.N_ELEM),1),conFUN,options);
 
 [theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax,1,vel);
 [cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
