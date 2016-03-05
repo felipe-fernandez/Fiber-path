@@ -1,15 +1,16 @@
 %non linear constraints for each layer
-function [consr,dconsr]=nlcnl(dv,data,nmin,nmax,pow,rmin,lay,cdiv,rc)
+function [consr,dconsr,volf,dvolf]=nlcnl(dv,data,nmin,nmax,pow,rmin,lay,cdiv,rc)
 
 %updload data
 ELEM_NODE=data.ELEM_NODE;
 COORD=data.COORD;
 nlay=data.nlay;
-
+vol=0;
 cons=[0;0;0;0];
 nd=data.nd;
 ne=data.N_ELEM;
 dcons=zeros(4,nlay*(nd+ne));
+dvol=zeros(1,nlay*(nd+ne));
 
 Ngauss=1;   %Number of Gauss points
 [egv,wg] = GLTable(Ngauss);
@@ -48,7 +49,7 @@ for ele=1:ne
             dphi=Be*dv(ien);
             
             %normal of the gradient (diferentiable at 0)
-            Normdphi=sqrt((dphi'*dphi));
+            normnphi=sqrt((dphi'*dphi));
             %derivative of the gradient
             dNormdphi=dphi'/sqrt(dphi'*dphi)*Be;
             
@@ -146,16 +147,19 @@ for ele=1:data.N_ELEM
             dkur=Be(1,:)*dnorvx(ien,:)+Be(2,:)*dnorvy(ien,:);
             
             %normal of the gradient (diferentiable at 0)
-            Normdphi=sqrt((dphi'*dphi));
+            normnphi=sqrt((dphi'*dphi));
             %derivative of the gradient
             dNormdphi=dphi'/sqrt(dphi'*dphi)*Be;
             
             %norm of gradient square
-            Normdphi2=Normdphi^2;
+            Normdphi2=normnphi^2;
             %derivative of the normal of gradient
-            dNormphi2=2*Normdphi*dNormdphi;
+            dNormphi2=2*normnphi*dNormdphi;
             
-            
+            %volume fraction given by separation of toolpaths
+            chil=normnphi/nmax;
+            %penalization
+            [rhol,drhol]=penal(chil);
             
             %constraint fibers shouldnt be far
             [c1,dc1]=rampsm(2-Normdphi2/(nmin^2),pow);
@@ -180,8 +184,8 @@ for ele=1:data.N_ELEM
             dcons(3:4,(1:nd)+(lay-1)*nd)=dcons(3:4,(1:nd)+...
                 (lay-1)*nd)+wg(eit)*wg(nit)*[dc3;dc5]*Jdet;
             %volume fraction
-            chi=Normdphi/nmax;
-            
+            vol=vol+wg(eit)*wg(nit)*rhol*Jdet;
+            dvol(ienl)=dvol(ienl)+wg(eit)*wg(nit)*drhol*dNormdphi*Jdet/nmax;
             %nodal averaging
             NODE_val(:,ien)=...
                 NODE_val(:,ien)+[c5];
@@ -210,8 +214,9 @@ dcons=[dcons(1:3,:)'/(data.At*h0) dcons(4,:)'/(data.At*cdiv^2)];
 
 consr=cons(ismember('ggkd',rc));
 dconsr=dcons(:,ismember('ggkd',rc));
-
-
+%volume fraction that depend on level set distance
+volf=vol/data.At;
+dvolf=dvol'/data.At;
 % %Averaging
 % NODE_val=NODE_val./NODE_nel;
 % 

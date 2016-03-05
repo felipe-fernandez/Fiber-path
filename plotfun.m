@@ -1,12 +1,12 @@
 %plot scalar nodal values fieldp
-function plotfun(COORD,fieldp,dene,data,nameplot,num,lay)
+function plotfun(COORD,fieldp,dene,data,nameplot,num,lay,vel)
 figure(num)
 set(num,'Position',[20+400*(num-1) 20 400 400]);
 vmM=max(fieldp);
 xyplot=linspace(-0.03,0.03,200);
 [Xp,Yp]=meshgrid(xyplot,xyplot);
 
-if num~=(data.nlay+1) || lay==1
+if (num~=(data.nlay+1) || lay==1) && vel~='c'
     [Xpd,Ypd,Fd] = griddata(data.xc_el(:,1),data.xc_el(:,2),dene,Xp,Yp);
     colormap(flipud(gray))
     contourf(Xpd,Ypd,Fd,[0 .25 .5 .75 1],'edgecolor','none');
@@ -19,7 +19,11 @@ end
 %vlevel=[0:.2:2];
 %contourf(Xr,Yr,Fr,vlevel)
 c2p=['r';'b';'g'];
-contour(Xr,Yr,Fr,20,'LineColor',c2p(lay))
+if vel=='c'
+    contour(Xr,Yr,Fr,20)
+else
+    contour(Xr,Yr,Fr,20,'LineColor',c2p(lay))
+end
 
 %colorbar
 if isempty(data.hole_nodes1)

@@ -1,5 +1,5 @@
 %Sensitivity analysis function
-function dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,th,nmax,nlay)
+function dtheta=derivatived(dv,WG,UG,data,ELEM_NODE,COORD,th,nmax,nlay,vel)
 nd=data.nd;
 ne=data.N_ELEM;
 matC0=data.matC0;
@@ -77,11 +77,16 @@ for ele=1:ne
                     (c1111*cos(2*angle))/2 + (c1111*cos(4*angle))/2 - c1122*cos(4*angle) - 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 + (c2222*cos(4*angle))/2,                                                                                          (sin(4*angle)*(c1111 - 2*c1122 - 4*c2121 + c2222))/2,                                                                                          (sin(4*angle)*(c1111 - 2*c1122 - 4*c2121 + c2222))/2, (c1111*cos(2*angle))/2 - (c1111*cos(4*angle))/2 + c1122*cos(4*angle) + 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 - (c2222*cos(4*angle))/2;...
                     (c1111*cos(2*angle))/2 + (c1111*cos(4*angle))/2 - c1122*cos(4*angle) - 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 + (c2222*cos(4*angle))/2,                                                                                          (sin(4*angle)*(c1111 - 2*c1122 - 4*c2121 + c2222))/2,                                                                                          (sin(4*angle)*(c1111 - 2*c1122 - 4*c2121 + c2222))/2, (c1111*cos(2*angle))/2 - (c1111*cos(4*angle))/2 + c1122*cos(4*angle) + 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 - (c2222*cos(4*angle))/2;...
                     (sin(4*angle)*(c1111 - 2*c1122 - 4*c2121 + c2222))/2, (c1111*cos(2*angle))/2 - (c1111*cos(4*angle))/2 + c1122*cos(4*angle) + 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 - (c2222*cos(4*angle))/2, (c1111*cos(2*angle))/2 - (c1111*cos(4*angle))/2 + c1122*cos(4*angle) + 2*c2121*cos(4*angle) - (c2222*cos(2*angle))/2 - (c2222*cos(4*angle))/2,                          sin(2*angle)*(c1111 - c2222 - c1111*cos(2*angle) + 2*c1122*cos(2*angle) + 4*c2121*cos(2*angle) - c2222*cos(2*angle))];
-                
-                %volume fraction
-                chi=normnphi/nmax;
-                %penalization
-                [rhol,drhol]=penal(chi);
+                %if constant velocity, volume fractions are set to one
+                if vel=='c'
+                    %volume fraction
+                    chi=normnphi/nmax;
+                    %penalization
+                    [rhol,drhol]=penal(chi);
+                else
+                    rhol=1;
+                    drhol=0;
+                end
                 %volume fraction independent of level set
                 chie=dve(ele+(lay-1)*ne);
                 

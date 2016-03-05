@@ -1,7 +1,7 @@
 %Check sensitivity analysis with finite differences
-function checkfindiff(obFUN,conFUN,data,numv)
+function checkfindiff(obFUN,conFUN,data,numv,vel)
 %index of variable to check
-iv=round((data.nd+data.N_ELEM)*data.nlay*rand(numv,1))+1;
+iv=round((data.nd+(vel~='c')*data.N_ELEM)*data.nlay*rand(numv,1))+1;
 
 %Initial guess
 %dv=0.9*(data.Yc+15/1000);%rand(size(data.Yb));%data.Yb,yH-data.Yb);%min(min(data.Yb,data.Xb),min(yH-data.Yb,xL-data.Xb));

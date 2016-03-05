@@ -32,7 +32,8 @@ cdiv=1;        %divergence constraint parameter
 rc='g';         %requested constraints 'g' gradient 'k' curvature 'd' divergence 
 nlay=1;         %number of layers
 vfc=0.5;        %volume fraction constraint
-numv=5;         %number of random variables to check finite differences 
+vel='c';        %velocity options: 'c' constant 'v' variable
+numv=2;         %number of random variables to check finite differences 
 
 % Read mesh file
 filename='fex2_2.txt';
@@ -45,16 +46,16 @@ filename='fex2_2.txt';
 [data,UG0,FG,G]=initializationf(filename,nlay,loadv,th,rc,efilter,fpres);
 
 %initial level set function
-dv0=data.Yc;
+dv0=vfc*nmax*data.Yc;
 %dv1=sqrt(data.Yc.^2+data.Xc.^2);
 dv=repmat(dv0,nlay,1)/.03;
 %dv=[dv0;dv1]/.03;
 %initial element densities
-dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
+%dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
 
 %initial fea to normalize
-[c0,dtheta]=feafun(dv,eye(nlay*(data.nd+data.N_ELEM)),data,UG0,FG,th,1,nmax,0);
-[cons,ceq,dcons,dceq]=nlcn(dv,eye(nlay*(data.nd+data.N_ELEM)),data,nmin,nmax,pow,rmin,cdiv,rc,vfc);
+[c0,dtheta]=feafun(dv,eye(nlay*(data.nd+data.N_ELEM)),data,UG0,FG,th,1,nmax,1,vel);
+[cons,ceq,dcons,dceq]=nlcn(dv,eye(nlay*(data.nd+data.N_ELEM)),data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
 
 dv=data.Yc;
 if nlay>1
@@ -65,26 +66,26 @@ if nlay==3
 end
 dv=dv/0.03;
 %initial element densities
-dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
+%dv=[dv;vfc*ones(data.N_ELEM*nlay,1)];
 
 %finite element and post processing function
-obFUN=@(dalpha)feafun(dalpha,G,data,UG0,FG,th,c0,nmax,0);
-conFUN=@(dalpha)nlcn(dalpha,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc);
+obFUN=@(dalpha)feafun(dalpha,G,data,UG0,FG,th,c0,nmax,1,vel);
+conFUN=@(dalpha)nlcn(dalpha,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
 
 %check sensitivities with finite differences
-%checkfindiff(obFUN,conFUN,data,numv);
+%checkfindiff(obFUN,conFUN,data,numv,vel);
 
 %Gradients of objective and constraints are given by the user
 %algorithm is set as interior-point as suggest matlab help
 options = optimset('GradObj','on',...
     'Display','on','GradConstr','on',...
-    'Tolfun',1e-4,'TolCon',1e-4,'TolX',1e-5,'MaxIter',500,...
+    'Tolfun',1e-4,'TolCon',1e-4,'TolX',1e-5,'MaxIter',5,...
     'Algorithm','interior-point','Display','iter','MaxFunEvals',500,'AlwaysHonorConstraints','bounds');
 %call fmincon function embedded in Matlab
 [dvo,fval] =fmincon(obFUN,dv,[],[],[],[],[-ones(nlay*data.nd,1);zeros(nlay*data.N_ELEM,1)],ones(nlay*(data.nd+data.N_ELEM),1),conFUN,options);
 
-[theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax,1);
-[cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc);
+[theta,dtheta]=feafun(dvo,G,data,UG0,FG,th,c0,nmax,1,vel);
+[cons,ceq,dcons,dceq]=nlcn(dvo,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel);
 disp([data.nameplot '  g=' num2str(nmin) '/' num2str(nmax) '  filter=' num2str(efilter) '  rmin=' num2str(rmin)  '  cdiv='  num2str(cdiv) '  c=' num2str(theta,'%1.8f') ])
 save([data.nameplot '.mat']);
 end

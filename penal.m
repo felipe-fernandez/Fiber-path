@@ -1,18 +1,18 @@
 %Penalization of the density
 function [rho,drho]=penal(chi)
-% p=1;
-% %penalization
-% rho=chi^p;
-% rho(rho>1)=1;
-% rho(rho<0)=0;
-% if chi>1 || chi<0
-%     drho=0;
-% else
-%     drho=p*chi^(p-1);
-% end
+p=1;
+%penalization
+rho=chi^p;
+rho(rho>1)=1;
+rho(rho<0)=0;
+if chi>1 || chi<0
+    drho=0;
+else
+    drho=p*chi^(p-1);
+end
 
-rho=1;
-drho=0;
+% rho=1;
+% drho=0;
 
 % epsilon=.5;
 % chit=chi-.5;

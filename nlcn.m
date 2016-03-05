@@ -1,5 +1,5 @@
 %non linear constraints for all the layers
-function [cons,ceq,dcons,dceq]=nlcn(dvs,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc)
+function [cons,ceq,dcons,dceq]=nlcn(dvs,G,data,nmin,nmax,pow,rmin,cdiv,rc,vfc,vel)
 %upload data 
 nd=data.nd;
 ne=data.N_ELEM;
@@ -9,6 +9,10 @@ dceq=[];
 cons=[];
 dcons=[];
 
+%if constant velocity, volume fractions are set to one
+if vel=='c'
+    dvs((nlay*nd+1):(nd+ne)*nlay)=1;
+end
 %scale level set functiion
 dv=dvs;
 dv(1:(nlay*nd))=0.03*dvs(1:(nlay*nd));
@@ -21,19 +25,32 @@ for lay=1:nlay
 end
 %volume fraction for each layer
 vf=Area_elv*dvf/At-vfc;
-
+cvolf=[];
+dcvolf=[];
 %each layer
 for lay=1:nlay
     dvl=dvf((lay-1)*nd+(1:nd));
-    [consl,dconsl]=nlcnl(dvl,data,nmin,nmax,pow,rmin,lay,cdiv,rc);
+    [consl,dconsl,volfl,dvolfl]=nlcnl(dvl,data,nmin,nmax,pow,rmin,lay,cdiv,rc);
     cons=[cons;consl];
     dcons=[dcons,dconsl];
+    cvolf=[cvolf;volfl-vfc];
+    dcvolf=[dcvolf,dvolfl];
 end
-%add volume fraction constraint
-cons=[cons;vf];
-dcons=[dcons,Area_elv'/At];
+%if constant velocity, volume fractions are set to one
+if vel=='c'
+    cons=[cons;cvolf];
+    dcons=[dcons,dcvolf];
+else
+    %add volume fraction constraint
+    cons=[cons;vf];
+    dcons=[dcons,Area_elv'/At];
+end
 %filter & scale
 dcons=G'*dcons;
 dcons(1:(nd*nlay),:)=0.03*dcons(1:(nd*nlay),:); 
 
+%if constant velocity the design variables are just the level set function
+if vel=='c'
+    dcons=dcons(1:(nd*nlay),:);
+end
 end
