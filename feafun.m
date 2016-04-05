@@ -1,5 +1,5 @@
 %Finite element function
-function [theta,dtheta]=feafun(dvs,G,data,UG0,FG,th,c0,nmax,plv,vel)
+function [theta,dtheta]=feafun(dvs,G,data,UG0,FG,th,c0,nmax,plv,vel,prob)
 
 %upload data
 ELEM_NODE=data.ELEM_NODE;
@@ -11,7 +11,7 @@ ne=data.N_ELEM;
 
 %if constant velocity, volume fractions are set to one
 if vel=='c'
-    dvs((nlay*nd+1):(nd+ne)*nlay)=1;
+    dvs((nlay*nd+1):((nd+ne)*nlay))=1;
 end
 dv=dvs;
 dv(1:(nlay*nd))=0.03*dvs(1:(nlay*nd)); %scale design variables
@@ -29,6 +29,7 @@ dvf=G*dv;       %filter design variables
 
 %derivative
 dtheta=derivatived(dvf,WG,UG,data,ELEM_NODE,COORD,th,nmax,nlay,vel);
+
 %normalize objective
 theta=theta/c0;
 %normalize and filter chain rule
@@ -45,14 +46,15 @@ if plv==1
     dva=zeros(ne,1);
     %plot each layer
     for lay=1:nlay
-        plotfun(COORD,dvf((lay-1)*nd+(1:nd)),dve((lay-1)*ne+(1:ne)),data,nameplot,lay,lay,vel);
+        plotfun(COORD,dvf((lay-1)*nd+(1:nd)),dve((lay-1)*ne+(1:ne)),data,nameplot,lay,lay,vel,nmax,prob);
         hold off
         dva=dva+dve((lay-1)*ne+(1:ne))/nlay;
     end
     
     for lay=1:nlay
-        plotfun(COORD,dvf((lay-1)*nd+(1:nd)),dva,data,nameplot,nlay+1,lay,vel);
+        plotfun(COORD,dvf((lay-1)*nd+(1:nd)),dva,data,nameplot,nlay+1,lay,vel,nmax,prob);
     end
     hold off
 end
+dtheta=roundn(dtheta,-3);
 end

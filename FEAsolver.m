@@ -51,7 +51,7 @@ for ele=1:ne
                 %normal of the gradient (diferentiable at 0)
                 normnphi=sqrt((dphi'*dphi));
                 
-                if normnphi<1e-3
+                if normnphi<1e-6
                     'Error: Flat level set surface'
                 end
                 

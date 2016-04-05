@@ -1,11 +1,14 @@
 %plot scalar nodal values fieldp
-function plotfun(COORD,fieldp,dene,data,nameplot,num,lay,vel)
+function plotfun(COORD,fieldp,dene,data,nameplot,num,lay,vel,nmax,prob)
 figure(num)
 set(num,'Position',[20+400*(num-1) 20 400 400]);
 vmM=max(fieldp);
-xyplot=linspace(-0.03,0.03,200);
-[Xp,Yp]=meshgrid(xyplot,xyplot);
+%thickness of the bead
+thic=6e-4;
 
+xplot=linspace(min(data.Xc)+thic/2,max(data.Xc)-thic/2,120);
+yplot=linspace(min(data.Yc)+thic/2,max(data.Yc)-thic/2,120);
+[Xp,Yp]=meshgrid(xplot,yplot);
 if (num~=(data.nlay+1) || lay==1) && vel~='c'
     [Xpd,Ypd,Fd] = griddata(data.xc_el(:,1),data.xc_el(:,2),dene,Xp,Yp);
     colormap(flipud(gray))
@@ -16,13 +19,25 @@ if (num~=(data.nlay+1) || lay==1) && vel~='c'
     hold on
 end
 [Xr,Yr,Fr] = griddata(COORD(:,1),COORD(:,2),fieldp,Xp,Yp);
-%vlevel=[0:.2:2];
 %contourf(Xr,Yr,Fr,vlevel)
+limi=max(max(abs(Fr)));
+
+%no holes
+if prob=='c'
+    radsmal=(5e-3)+thic/2;
+    Radbig=(15e-3)-thic/2;
+    Fr(sqrt((Xr+15e-3).^2+Yr.^2)<radsmal)=NaN;
+    Fr(sqrt((Xr-15e-3).^2+Yr.^2)<radsmal)=NaN;
+    Fr(sqrt((Xr+15e-3).^2+Yr.^2)>Radbig & Xr<-15e-3)=NaN;
+    Fr(sqrt((Xr-15e-3).^2+Yr.^2)>Radbig & Xr>15e-3)=NaN;
+end
+
+clev=(-limi-nmax*thic):nmax*thic:(limi+nmax*thic);
 c2p=['r';'b';'g'];
 if vel=='c'
-    contour(Xr,Yr,Fr,20)
+    [C,h]=contour(Xr,Yr,Fr,clev,'LineWidth',1.25);%,'LineColor',c2p(lay))
 else
-    contour(Xr,Yr,Fr,20,'LineColor',c2p(lay))
+    [C,h]=contour(Xr,Yr,Fr,clev,'LineColor',c2p(lay));
 end
 
 %colorbar
@@ -52,5 +67,10 @@ set(gcf, 'PaperPositionMode', 'manual');
 set(gcf,'papersize',[8,8])
 set(gcf,'paperposition',[0,0,8,8])
 saveas(gcf,[nameplot num2str(num) '.eps'],'psc2');
+
+% %write file
+% if num~=(data.nlay+1)
+%     writefile(C,num,nameplot,thic)
+% end
 end
 
